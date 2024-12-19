@@ -54,47 +54,50 @@ $ go run main.go
 - `farms` schema
 
 ```sql
-CREATE TABLE `farms` (
-  `id` CHAR(36) NOT NULL,
-  `name` VARCHAR(255) NOT NULL,
-  `location` VARCHAR(255),
-  `owner_id` CHAR(36) NOT NULL,
-  `metadata` JSON,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS farms (
+  `id` varchar(36) NOT NULL PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `province` varchar(255) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `postal_code` varchar(255) NOT NULL,
+  `owner_id` varchar(36) NOT NULL UNIQUE,
+  `metadata` json,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`owner_id`) REFERENCES users(`id`)
 );
 ```
 
 - `user_farm` schema
 
 ```sql
-CREATE TABLE `user_farm` (
-  `user_id` CHAR(36) NOT NULL,
-  `farm_id` CHAR(36) NOT NULL,
-  `role_in_farm` ENUM('OWNER','MANAGER','WORKER') NOT NULL,
-  `permissions` JSON,
-  PRIMARY KEY (`user_id`, `farm_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`farm_id`) REFERENCES `farms`(`id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS user_farm (
+  `id` varchar(36) NOT NULL PRIMARY KEY,
+  `user_id` varchar(36) NOT NULL,
+  `farm_id` varchar(36) NOT NULL,
+  `role` enum('ADMIN', 'EDITOR', 'VIEWER') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  FOREIGN KEY (`farm_id`) REFERENCES farms(`id`)
 );
 ```
 
 - `reports` schema
 
 ```sql
-CREATE TABLE `reports` (
-  `id` CHAR(36) NOT NULL,
-  `farm_id` CHAR(36) NOT NULL,
-  `type` ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM') NOT NULL,
-  `file_url` VARCHAR(255) NOT NULL,
-  `generated_at` DATETIME NOT NULL,
-  `metadata` JSON,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`farm_id`) REFERENCES `farms`(`id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS reports (
+  `id` varchar(36) NOT NULL PRIMARY KEY,
+  `farm_id` varchar(36) NOT NULL,
+  `type` enum('WEEKLY', 'MONTHLY', 'YEARLY') NOT NULL,
+  `file_url` varchar(255) NOT NULL,
+  `generated_at` date NOT NULL,
+  `metadata` json,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`farm_id`) REFERENCES farms(`id`)
 );
 ```
 
